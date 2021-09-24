@@ -112,7 +112,7 @@ def rango_o(pixel, a=100, b=200):
         f=255
     return f
 
-def gamma_o(pixel, gama = 0.5):
+def gamma_o(pixel, gama = 0.2):
     f = np.power(pixel, gama)
     return f
 
@@ -160,16 +160,18 @@ def cal_histograma(img):
 
 
 def grafica(histr, modificada ,color):
-    fig, axs = plt.subplots(2, 1, constrained_layout=True)
+    fig = plt.figure('Histogramas',figsize=(8,5),tight_layout=True)
+    axs = fig.subplots(2,1,sharex=True)
+    #fig, axs = plt.subplots(2, 1, constrained_layout=True)
     for i,col in enumerate(color):
-        axs[0].plot(histr[:,i], color = col)
-        axs[0].set_xlabel('Valor pixel')
-        axs[0].set_ylabel('Frecuencia Pixel')
-        axs[0].set_title('Hitograma')
-        axs[1].plot(modificada[:,i], color = col)
-        axs[1].set_xlabel('Valor pixel')
-        axs[1].set_ylabel('Frecuencia Pixel')
-        axs[1].set_title('Hitograma')
+        axs[0].plot(histr[:,i], color = col, label = col)
+        axs[0].set_xlabel(r'Valor pixel')
+        axs[0].set_ylabel(r'Frecuencia Pixel')
+        #axs[0].set_title(r'Hitogramas')
+        axs[1].plot(modificada[:,i], color = col, label = col)
+        axs[1].set_xlabel(r'Valor pixel')
+        axs[1].set_ylabel(r'Frecuencia Pixel')
+        #axs[1].set_title(r'Hitograma')
     plt.show()
     
 
@@ -265,10 +267,17 @@ def suma(imgs):
     cv2.imshow('b', b)
     cv2.waitKey(0)
     Final = cv2.normalize(c, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_64F)
+
+    ## Suma usando la funcionn de opencv 
+    img1 = imgs[0,:,:]
+    img2 = imgs[1,:,:]
+    dst = cv2.addWeighted(img1,1,img2,1,0)
+    name2 = "Pregunta_8_opencv.png"
     cv2.imwrite(os.path.join(path_w,name),Final)
+    cv2.imwrite(os.path.join(path_w,name2),dst)
     return None
 
-def suma_ponderada(imgs,alpha=1):
+def suma_ponderada(imgs,alpha=0.2):
     ## Obtener los valores a sumar del sistem
     a = np.array(imgs[0,:,:], dtype=np.float64)/255
     b = np.array(imgs[1,:,:], dtype=np.float64)/255
@@ -308,8 +317,8 @@ def resta_opencv(imgs):
     print("Resta Open cv")
     a = imgs[0,:,:]
     b = imgs[1,:,:]
-    c =cv2.subtract(a, b)
-    #c =cv2.absdiff(a, b)
+    #c =cv2.subtract(a, b)
+    c =cv2.absdiff(a, b)
     name = "Pregunta_11_{}.png".format(1)
     cv2.imshow('Modificada', c)
     cv2.imshow('a', a)
@@ -322,11 +331,11 @@ def conversion(img, contador):
 
     #new =cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-    #new =cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    new =cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     #new =cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
 
-    new = bgr2cmy(img)
+    #new = bgr2cmy(img)
 
 
     name = "Pregunta_12_{}.png".format(contador)
@@ -357,17 +366,17 @@ def visual(imgs):
         #lineal(img, contador)
         #log(img, contador)
         #equalize(img, contador) ## Esta solo funciona con imagenes en Gray
-        #conversion(img, contador)
+        conversion(img, contador)
 
         contador =contador+1
 
 def main():
     imgs = data(path_o, 1)
     visual(imgs)
-    suma(imgs)
-    suma_ponderada(imgs, 0)
-    resta(imgs)
-    resta_opencv(imgs)
+    #suma(imgs)
+    #suma_ponderada(imgs, 0.2)
+    #resta(imgs)
+    #resta_opencv(imgs)
     
     
 

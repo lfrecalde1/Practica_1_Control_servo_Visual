@@ -1,7 +1,9 @@
+#!/home/fer/.virtualenvs/cv/bin/python
 import cv2
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from numpy import linalg as LA
 
 ## Colocar las direcciones donde se encuentran las fotografias
 path_o = '/home/fer/Control_servo_visual/Code/Practico_1.0/Pictures/'
@@ -112,8 +114,9 @@ def rango_o(pixel, a=100, b=200):
         f=255
     return f
 
-def gamma_o(pixel, gama = 0.2):
-    f = np.power(pixel, gama)
+def gamma_o(pixel, gama = 1.5):
+    valor = 1/gama
+    f = np.power(pixel, valor)
     return f
 
 def gamma(img,contador):
@@ -221,6 +224,23 @@ def lineal(img,contador):
     modificado, color = cal_histograma(new)
     grafica(histograma, modificado, color)
     return None
+def exponencial(img, contador):
+    maximo = 255 
+    base = 1.02
+    C = 255.0/(np.power(base, maximo)-1)
+    salida = C*(np.power(base, img)-1)
+    norm = cv2.normalize(salida, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U);
+    name = "Pregunta_14_{}.png".format(contador)
+
+    show(img, norm)
+    guardar(norm, name)
+
+    histograma, color = cal_histograma(img)
+    modificado, color = cal_histograma(norm)
+    grafica(histograma, modificado, color)
+
+    return None
+
 
 def log(img,contador):
     c =255/(np.log(1+np.max(img)))
@@ -271,7 +291,7 @@ def suma(imgs):
     ## Suma usando la funcionn de opencv 
     img1 = imgs[0,:,:]
     img2 = imgs[1,:,:]
-    dst = cv2.addWeighted(img1,1,img2,1,0)
+    dst = cv2.addWeighted(img1,0.5,img2,0.5,0)
     name2 = "Pregunta_8_opencv.png"
     cv2.imwrite(os.path.join(path_w,name),Final)
     cv2.imwrite(os.path.join(path_w,name2),dst)
@@ -328,14 +348,15 @@ def resta_opencv(imgs):
     cv2.imwrite(os.path.join(path_w,name),Final)
     
 def conversion(img, contador):
+    tipo = [cv2.COLOR_BGR2GRAY, cv2.COLOR_BGR2HSV, cv2.COLOR_BGR2YCR_CB, cv2.COLOR_BGR2GRAY]
 
     #new =cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-    new =cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    #new =cv2.cvtColor(img, tipo[contador])
 
     #new =cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
 
-    #new = bgr2cmy(img)
+    new = bgr2cmy(img)
 
 
     name = "Pregunta_12_{}.png".format(contador)
@@ -355,7 +376,23 @@ def bgr2cmy(img):
 
     CMYK = (np.dstack((C,M,Y,k))*255).astype(np.uint8)
     return CMYK
+def diff_histogram(img):
+    A = img[4 ,:, :]
+    B = img[5, :, :]
+    histogram_a, color_a = cal_histograma(A)
+    histogram_b, color_b = cal_histograma(B)
+    norma_A =np.sqrt(np.sum(np.diag(histogram_a.T@histogram_a)))
+    norma_B =np.sqrt(np.sum(np.diag(histogram_b.T@histogram_b)))
+    grafica(histogram_a, histogram_b, color_a)
+    print(norma_A, norma_B)
 
+#def grafica_histograma(a, b):
+#    fig, axs = plt.subplots(1, 2, sharey=True, tight_layout=True)
+#    axs[0].hist(1, a)
+#    axs[1].hist(1, b)
+#    plt.show()
+
+    
 def visual(imgs):
     contador =0
     for img in imgs: 
@@ -365,18 +402,22 @@ def visual(imgs):
         #basic_linear_transform(img, contador)
         #lineal(img, contador)
         #log(img, contador)
+        #exponencial(img, contador)
         #equalize(img, contador) ## Esta solo funciona con imagenes en Gray
-        conversion(img, contador)
+        #conversion(img, contador)
+        
 
         contador =contador+1
 
 def main():
     imgs = data(path_o, 1)
     visual(imgs)
-    #suma(imgs)
+    #exponencial(imgs[0,:,:], 1)
+    suma(imgs)
     #suma_ponderada(imgs, 0.2)
     #resta(imgs)
     #resta_opencv(imgs)
+    #diff_histogram(imgs)
     
     
 
